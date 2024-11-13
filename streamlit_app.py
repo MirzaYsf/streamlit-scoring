@@ -17,7 +17,7 @@ if 'page' not in st.session_state:
     st.session_state.page = "home"
 
 def show_analysis():
-    st.title("Additional Analysis")
+    st.title("Distribution Analysis")
 
     # Load data
     df = pd.read_csv("data.csv")
@@ -25,72 +25,78 @@ def show_analysis():
     # Selecting numerical columns for analysis
     numerical_cols = df.select_dtypes(include=[np.number]).columns
     
-    # Create two columns for the layout
-    col1, col2 = st.columns(2)
+    # Create centered layout
+    col1, col2, col3 = st.columns([1, 2, 1])
     
-    with col1:
-        st.subheader("Distribution Analysis")
+    with col2:
+        # Select column to analyze
         selected_column = st.selectbox(
-            "Select a column to analyze:",
+            "Select a feature to analyze:",
             numerical_cols
         )
         
-        # Create histogram
-        fig, ax = plt.subplots(figsize=(10, 6))
-        plt.hist(df[selected_column].dropna(), bins=30, edgecolor='black')
-        plt.title(f'Distribution of {selected_column}')
-        plt.xlabel(selected_column)
-        plt.ylabel('Count')
-        st.pyplot(fig)
-
-    with col2:
-        st.subheader("Summary Statistics")
-        summary_stats = df[selected_column].describe()
-        st.write(summary_stats)
+        # Create histogram with enhanced styling
+        fig, ax = plt.subplots(figsize=(12, 6))
         
-        st.markdown(f"""
-        **Quick insights for {selected_column}:**
-        - Number of null values: {df[selected_column].isnull().sum()}
-        - Skewness: {df[selected_column].skew():.2f}
-        - Kurtosis: {df[selected_column].kurtosis():.2f}
-        """)
-
-    # Adding correlation analysis
-    st.markdown("---")
-    st.subheader("Correlation Analysis")
-    
-    # Select only numeric columns for correlation
-    numeric_df = df.select_dtypes(include=[np.number])
-    corr_matrix = numeric_df.corr()
-    
-    # Create correlation heatmap using matplotlib
-    fig, ax = plt.subplots(figsize=(12, 8))
-    im = ax.imshow(corr_matrix, cmap='coolwarm', aspect='auto')
-    
-    # Add colorbar
-    plt.colorbar(im, label='Correlation Coefficient')
-    
-    # Add labels
-    ax.set_xticks(np.arange(len(corr_matrix.columns)))
-    ax.set_yticks(np.arange(len(corr_matrix.columns)))
-    ax.set_xticklabels(corr_matrix.columns, rotation=90)
-    ax.set_yticklabels(corr_matrix.columns)
-    
-    # Add correlation values
-    for i in range(len(corr_matrix.columns)):
-        for j in range(len(corr_matrix.columns)):
-            text = ax.text(j, i, f'{corr_matrix.iloc[i, j]:.2f}',
-                         ha="center", va="center", color="black")
-    
-    plt.title("Correlation Matrix Heatmap")
-    plt.tight_layout()
-    st.pyplot(fig)
-
-    # Adding feature selection based on correlation
-    st.subheader("Top Correlations")
-    target_correlations = corr_matrix['TARGET'].sort_values(ascending=False)
-    st.write("Features most correlated with TARGET:")
-    st.write(target_correlations)
+        # Plot histogram with more aesthetically pleasing parameters
+        plt.hist(df[selected_column].dropna(), 
+                bins=30, 
+                edgecolor='black',
+                color='skyblue',
+                alpha=0.7)
+        
+        # Add mean and median lines
+        plt.axvline(df[selected_column].mean(), 
+                   color='red', 
+                   linestyle='dashed', 
+                   linewidth=1,
+                   label=f'Mean: {df[selected_column].mean():.2f}')
+        plt.axvline(df[selected_column].median(), 
+                   color='green', 
+                   linestyle='dashed', 
+                   linewidth=1,
+                   label=f'Median: {df[selected_column].median():.2f}')
+        
+        # Enhance the plot appearance
+        plt.title(f'Distribution of {selected_column}', pad=20)
+        plt.xlabel(selected_column)
+        plt.ylabel('Frequency')
+        plt.legend()
+        plt.grid(True, alpha=0.3)
+        
+        # Display plot
+        st.pyplot(fig)
+        
+        # Display summary statistics in a clean format
+        st.subheader("Summary Statistics")
+        
+        # Calculate statistics
+        stats = {
+            "Count": len(df[selected_column].dropna()),
+            "Mean": df[selected_column].mean(),
+            "Median": df[selected_column].median(),
+            "Std Dev": df[selected_column].std(),
+            "Min": df[selected_column].min(),
+            "Max": df[selected_column].max(),
+            "Null Values": df[selected_column].isnull().sum()
+        }
+        
+        # Create two columns for statistics
+        stat_col1, stat_col2 = st.columns(2)
+        
+        with stat_col1:
+            st.markdown("**Basic Statistics:**")
+            st.write(f"• Count: {stats['Count']:,.0f}")
+            st.write(f"• Mean: {stats['Mean']:,.2f}")
+            st.write(f"• Median: {stats['Median']:,.2f}")
+            st.write(f"• Std Dev: {stats['Std Dev']:,.2f}")
+            
+        with stat_col2:
+            st.markdown("**Range Information:**")
+            st.write(f"• Minimum: {stats['Min']:,.2f}")
+            st.write(f"• Maximum: {stats['Max']:,.2f}")
+            st.write(f"• Range: {stats['Max']-stats['Min']:,.2f}")
+            st.write(f"• Missing Values: {stats['Null Values']:,}")
 
     # Button to return to home
     st.markdown("---")
