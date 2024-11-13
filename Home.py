@@ -6,7 +6,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def show_home():
-    # Configuration de la page
     st.title("Credit Application Risk Assessment")
 
     # --- 1. Load IDs and data from data.csv ---
@@ -23,16 +22,13 @@ def show_home():
         'EXT_SOURCE_2'
     ]
 
-    # Dropdown to select SK_ID_CURR
     selected_id = st.selectbox("Select Client ID:", id_list)
 
-    # --- 3. Display selected ID data ---
     selected_data = df[df['SK_ID_CURR'] == selected_id][columns_to_display]
     selected_data = selected_data.applymap(lambda x: f"{int(x):,}".replace(",", "") if isinstance(x, (int, float)) and not np.isnan(x) else x)
     st.subheader("Client Information")
     st.write(selected_data)
 
-    # --- 4. Define and call the API ---
     api_url = "https://mirzayusof.pythonanywhere.com/predict"
 
     def call_api(api_endpoint, id_value): 
@@ -40,13 +36,10 @@ def show_home():
         response = requests.get(url)
         return response.json()
 
-    # Call API and display formatted response
     api_response = call_api(api_url, selected_id)
 
-    # --- 5. Format and display API response ---
     st.subheader("Credit Risk Assessment Results")
 
-    # Create three columns for better layout
     col1, col2, col3 = st.columns(3)
 
     with col1:
@@ -72,7 +65,6 @@ def show_home():
             help="Potential business impact if credit is approved"
         )
 
-    # Add explanation box
     st.info(f"""
     **Assessment Summary:**
     - Client ID: {api_response['SK_ID_CURR']}
@@ -81,21 +73,15 @@ def show_home():
     - Potential business cost: ${api_response['business_cost']:,}
     """)
 
-    # --- 6. Data Visualization Section ---
     st.subheader("Data Analysis")
 
-    # Select columns for X and Y axes
     x_column = st.selectbox("Select column for X-axis", df.columns)
     y_column = st.selectbox("Select column for Y-axis", df.columns)
 
-    # Check if the selected columns are numeric
     if pd.api.types.is_numeric_dtype(df[x_column]) and pd.api.types.is_numeric_dtype(df[y_column]):
         plt.figure(figsize=(10, 6))
-        
-        # Plot all points in blue
         plt.scatter(df[x_column], df[y_column], color='blue', alpha=0.5, label='Other Clients')
         
-        # Highlight selected ID
         selected_x = df.loc[df['SK_ID_CURR'] == selected_id, x_column].values[0]
         selected_y = df.loc[df['SK_ID_CURR'] == selected_id, y_column].values[0]
         plt.scatter(selected_x, selected_y, color='green' if api_response["prediction"] == 0 else 'red', 
@@ -110,7 +96,7 @@ def show_home():
     else:
         st.warning("Please select numeric columns for both X and Y axes to generate the plot.")
 
-    # Button to switch to second page
+    # Button to switch to analysis page
     if st.button("View Additional Analysis"):
         st.session_state.page = "analysis"
-        st.experimental_rerun()
+        st.rerun()  # Using st.rerun() instead of experimental_rerun()
