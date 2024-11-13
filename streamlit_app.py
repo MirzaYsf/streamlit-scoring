@@ -3,7 +3,6 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
 from Home import show_home
 
 # Configuration initiale
@@ -64,17 +63,28 @@ def show_analysis():
     numeric_df = df.select_dtypes(include=[np.number])
     corr_matrix = numeric_df.corr()
     
-    # Using seaborn for better correlation heatmap
-    plt.figure(figsize=(12, 8))
-    sns.heatmap(corr_matrix, 
-                cmap='coolwarm', 
-                center=0,
-                annot=True,  # Show correlation values
-                fmt='.2f',   # Format to 2 decimal places
-                square=True,
-                cbar_kws={'label': 'Correlation Coefficient'})
+    # Create correlation heatmap using matplotlib
+    fig, ax = plt.subplots(figsize=(12, 8))
+    im = ax.imshow(corr_matrix, cmap='coolwarm', aspect='auto')
+    
+    # Add colorbar
+    plt.colorbar(im, label='Correlation Coefficient')
+    
+    # Add labels
+    ax.set_xticks(np.arange(len(corr_matrix.columns)))
+    ax.set_yticks(np.arange(len(corr_matrix.columns)))
+    ax.set_xticklabels(corr_matrix.columns, rotation=90)
+    ax.set_yticklabels(corr_matrix.columns)
+    
+    # Add correlation values
+    for i in range(len(corr_matrix.columns)):
+        for j in range(len(corr_matrix.columns)):
+            text = ax.text(j, i, f'{corr_matrix.iloc[i, j]:.2f}',
+                         ha="center", va="center", color="black")
+    
     plt.title("Correlation Matrix Heatmap")
-    st.pyplot(plt)
+    plt.tight_layout()
+    st.pyplot(fig)
 
     # Adding feature selection based on correlation
     st.subheader("Top Correlations")
