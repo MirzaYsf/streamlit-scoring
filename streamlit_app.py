@@ -23,9 +23,6 @@ def show_analysis():
     # Load data
     df = pd.read_csv("data.csv")
 
-    # Add some interesting analysis here
-    st.subheader("Statistical Overview")
-    
     # Selecting numerical columns for analysis
     numerical_cols = df.select_dtypes(include=[np.number]).columns
     
@@ -34,7 +31,6 @@ def show_analysis():
     
     with col1:
         st.subheader("Distribution Analysis")
-        # Let user select a column to analyze
         selected_column = st.selectbox(
             "Select a column to analyze:",
             numerical_cols
@@ -50,11 +46,9 @@ def show_analysis():
 
     with col2:
         st.subheader("Summary Statistics")
-        # Display summary statistics for selected column
         summary_stats = df[selected_column].describe()
         st.write(summary_stats)
         
-        # Add some additional insights
         st.markdown(f"""
         **Quick insights for {selected_column}:**
         - Number of null values: {df[selected_column].isnull().sum()}
@@ -62,14 +56,10 @@ def show_analysis():
         - Kurtosis: {df[selected_column].kurtosis():.2f}
         """)
 
-    # Add correlation heatmap
     st.subheader("Correlation Analysis")
-    # Select only numeric columns
     numeric_df = df.select_dtypes(include=[np.number])
-    # Calculate correlation matrix
     corr_matrix = numeric_df.corr()
     
-    # Create heatmap
     fig, ax = plt.subplots(figsize=(12, 8))
     plt.imshow(corr_matrix, cmap='coolwarm', aspect='auto')
     plt.colorbar()
@@ -81,7 +71,7 @@ def show_analysis():
     # Button to return to home
     if st.button("Return to Dashboard"):
         st.session_state.page = "home"
-        st.experimental_rerun()
+        st.rerun()  # Using st.rerun() instead of experimental_rerun()
 
 # Main App Logic
 def main():
