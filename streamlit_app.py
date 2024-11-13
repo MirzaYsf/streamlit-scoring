@@ -1,8 +1,26 @@
+# Structure des dossiers:
+# 
+# └── your_project/
+#     ├── pages/
+#     │   └── 📊_Image_Analysis.py
+#     ├── assets/
+#     │   ├── dashboard_schema.jpg
+#     │   └── model_performance.jpg
+#     └── 🏠_Home.py  (ancien app.py)
+
+
 import streamlit as st
 import pandas as pd
 import requests
 import numpy as np
 import matplotlib.pyplot as plt
+
+# Configuration de la page
+st.set_page_config(
+    page_title="Credit Risk Dashboard",
+    page_icon="🏠",
+    layout="wide"
+)
 
 # --- 1. Load IDs and data from data.csv ---
 df = pd.read_csv("data.csv")  
@@ -107,3 +125,7 @@ if pd.api.types.is_numeric_dtype(df[x_column]) and pd.api.types.is_numeric_dtype
     st.pyplot(plt)
 else:
     st.warning("Please select numeric columns for both X and Y axes to generate the plot.")
+
+# Ajout d'un lien vers la page d'analyse des images
+st.sidebar.markdown("---")
+st.sidebar.markdown("📊 See also: [Image Analysis](Image_Analysis)")
